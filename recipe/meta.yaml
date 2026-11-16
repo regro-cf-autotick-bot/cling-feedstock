@@ -18,6 +18,8 @@ source:
     - patches/0003-enable-redefinition-allowed.patch
     # LLVM_REQUIES_EH
     - patches/0004-Set-LLVM_REQUIRES_EH-for-Cling.patch
+    # backport https://github.com/root-project/cling/commit/298db457ac1a790df3201a207015b9243877c0c9
+    - patches/0005-Make-standalone-build-work-and-let-ROOT-skip-the-dri.patch
 
 
 build:

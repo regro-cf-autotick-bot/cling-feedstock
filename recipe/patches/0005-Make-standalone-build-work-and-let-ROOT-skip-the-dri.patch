@@ -1,0 +1,101 @@
+From c4c7b13b9cdc4671834186dfd76883a72a3dedcb Mon Sep 17 00:00:00 2001
+From: Vassil Vassilev <v.g.vassilev@gmail.com>
+Date: Sat, 2 May 2026 11:28:03 +0000
+Subject: [PATCH 5/5] Make standalone build work and let ROOT skip the
+ driver/libcling/Jupyter
+
+Two cmake bugs were silently broken outside ROOT's
+LLVM_EXTERNAL_PROJECTS=cling path:
+
+* libcling.so is built from $<TARGET_OBJECTS:obj.clingInterpreter>,
+  which copies the .o files but not the OBJECT target's
+  INTERFACE_LINK_LIBRARIES. The clangInterpreter dependency declared
+  in lib/Interpreter/CMakeLists.txt therefore never reached the
+  libcling link line, and a standalone build failed with `undefined
+  reference to clang::ReplCodeCompleter::codeComplete` introduced by
+  root-project/root@0307632f31. Repeat the dependency in
+  tools/libcling/CMakeLists.txt so libcling.so links
+  libclangInterpreter.a directly.
+
+* The driver, libcling and the Jupyter kernel were gated on
+  CLING_INCLUDE_TESTS in lib/CMakeLists.txt and tools/CMakeLists.txt
+  (see root-project/root@9cdffe0c44, which collapsed the original
+  `EXISTS textinput OR CLING_INCLUDE_TESTS` gate down to the test
+  flag alone). Tying these targets to test inclusion conflated
+  unrelated axes and broke the standalone build documented in cling's
+  README whenever -DCLING_INCLUDE_TESTS=OFF was used, with errors of
+  the form `cannot find -lclingUserInterface` from the unconditional
+  links in tools/driver and tools/Jupyter. Replace the implicit proxy
+  with an explicit CLING_MINIMAL option, default OFF: the standalone
+  build keeps producing the driver, libcling and the Jupyter kernel
+  as before. Embedders that consume cling purely as a set of
+  libraries (e.g. ROOT) flip CLING_MINIMAL on. CLING_INCLUDE_TESTS
+  still forces these targets so the lit suite keeps working.
+
+Inside ROOT both bugs were masked because LLVM_EXTERNAL_PROJECTS=cling
+pulls clangInterpreter in transitively via clangFrontendTool's deps
+and add_subdirectory(cling EXCLUDE_FROM_ALL) prevents the
+driver/libcling/Jupyter targets from being built. Set CLING_MINIMAL in
+interpreter/CMakeLists.txt so cling skips those subdirectories at
+configure time too.
+---
+ CMakeLists.txt                | 4 ++++
+ lib/CMakeLists.txt            | 2 +-
+ tools/CMakeLists.txt          | 3 +--
+ tools/libcling/CMakeLists.txt | 1 +
+ 4 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 30dc281a..f284eb07 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -430,6 +430,10 @@ option(CLING_INCLUDE_TESTS
+        "Generate build targets for the Cling unit tests."
+        ${LLVM_INCLUDE_TESTS})
+ 
++option(CLING_MINIMAL
++       "Skip the cling driver, libcling and the Jupyter kernel; build only the cling libraries."
++       OFF)
++
+ if (NOT WIN32)
+   set(cling_path_delim ":")
+ else()
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index eb292527..664da2cf 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -8,7 +8,7 @@
+ 
+ add_subdirectory(Interpreter)
+ add_subdirectory(MetaProcessor)
+-if(CLING_INCLUDE_TESTS)
++if(NOT CLING_MINIMAL OR CLING_INCLUDE_TESTS)
+    add_subdirectory(UserInterface)
+ endif()
+ add_subdirectory(Utils)
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index aa7726df..49f67a55 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -6,8 +6,7 @@
+ # LICENSE.TXT for details.
+ #------------------------------------------------------------------------------
+ 
+-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../lib/UserInterface/textinput
+-   OR CLING_INCLUDE_TESTS)
++if(NOT CLING_MINIMAL OR CLING_INCLUDE_TESTS)
+   add_subdirectory(driver)
+   add_subdirectory(libcling)
+ endif()
+diff --git a/tools/libcling/CMakeLists.txt b/tools/libcling/CMakeLists.txt
+index 3d119b90..7d3b9d90 100644
+--- a/tools/libcling/CMakeLists.txt
++++ b/tools/libcling/CMakeLists.txt
+@@ -22,6 +22,7 @@ set(LIBS
+   clangCodeGen
+   clangBasic
+   clangEdit
++  clangInterpreter
+ 
+   clingUtils
+ )

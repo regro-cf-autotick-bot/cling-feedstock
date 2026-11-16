@@ -1,7 +1,7 @@
 From 59d38626aa4729c5b43f52de4a7c816c2a6a3db1 Mon Sep 17 00:00:00 2001
 From: Sylvain Corlay <sylvain.corlay@gmail.com>
 Date: Mon, 13 Sep 2021 23:20:38 +0200
-Subject: [PATCH 1/4] remove-jupyter
+Subject: [PATCH 1/5] remove-jupyter
 
 ---
  tools/CMakeLists.txt | 2 --
