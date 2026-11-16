@@ -1,17 +1,17 @@
-From 56231e739895a3fa996850cdbe2c0ff2d2f751d0 Mon Sep 17 00:00:00 2001
+From 990ca29015593739fc9a13176400a00f0239f93b Mon Sep 17 00:00:00 2001
 From: Sylvain Corlay <sylvain.corlay@gmail.com>
 Date: Fri, 6 Dec 2019 18:57:22 +0100
-Subject: [PATCH 3/5] Drop compile-time sysroot
+Subject: [PATCH 2/4] Drop compile-time sysroot
 
 ---
  lib/Interpreter/CIFactory.cpp | 4 ----
  1 file changed, 4 deletions(-)
 
 diff --git a/lib/Interpreter/CIFactory.cpp b/lib/Interpreter/CIFactory.cpp
-index 385c0368..05776f29 100644
+index bcae9069..1f583200 100644
 --- a/lib/Interpreter/CIFactory.cpp
 +++ b/lib/Interpreter/CIFactory.cpp
-@@ -344,10 +344,6 @@ namespace {
+@@ -365,10 +365,6 @@ namespace {
            sArguments.addArgument("-nostdinc++");
        }
  

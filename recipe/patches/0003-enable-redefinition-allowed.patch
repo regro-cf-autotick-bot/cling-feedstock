@@ -1,7 +1,7 @@
-From 54825504ed344b5b5a0101392c5eb113a2889c6c Mon Sep 17 00:00:00 2001
+From 2703460ed35acb3ddc0a5bf62420cc7b29dfbbde Mon Sep 17 00:00:00 2001
 From: Sylvain Corlay <sylvain.corlay@gmail.com>
 Date: Fri, 28 Aug 2020 22:13:04 +0200
-Subject: [PATCH 4/5] enable redefinition allowed
+Subject: [PATCH 3/4] enable redefinition allowed
 
 ---
  include/cling/Interpreter/RuntimeOptions.h | 2 +-
