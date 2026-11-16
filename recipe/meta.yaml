@@ -4,7 +4,7 @@
 
 package:
   name: cling
-  version: {{ version }}
+  version: "{{ version }}"
 
 source:
   url: https://github.com/root-project/cling/archive/v{{ version }}.tar.gz
