@@ -1,6 +1,6 @@
 {% set version = "1.3" %}
 {% set build_number = 0 %}
-{% set clang_version = "18.1.8" %}
+{% set clang_version = "20.1.8" %}
 
 package:
   name: cling
